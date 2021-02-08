@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel = "stylesheet" href="estilos.css">
+    <title>Document</title>
+</head>
+<body>
+    <h1 class="cosa">Lista Personas</h1>
+    <hr>
+    <form id="form">
+        <ul>
+            <li>
+                <input type="hidden" id="Id" name="Id" />
+              </li>
+            <li>
+              <label for="Nombre">Nombre:</label>
+              <input type="text" id="Nombre" name="Nombre11" />
+            </li>
+            <li>
+              <label for="Edad">Edad:</label>
+              <input type="number" id="Edad" name="Edad" />
+            </li>
+
+            <li class="button">
+                <button type="button"  onclick="Guardar()">Guardar</button>
+            </li>
+            
+        </ul>
+    </form>
+    <hr>
+    <div id="divlista">
+        
+        
+    </div>
+</body>
+</html>
+
+<script>
+    var url = "https://localhost:44324/api/persona";
+    Get();
+
+function Guardar(){
+    if(document.getElementById("Id").value!=""){
+        Edit();
+    }else{
+        post();
+    }
+}
+
+function OpenEdit(Id, Nombre, Edad){
+    document.getElementById("Id").value = Id;
+    document.getElementById("Nombre").value = Nombre;
+    document.getElementById("Edad").value = Edad;
+}
+
+function Edit(){
+    fetch(url, {
+        method: "PUT",
+        body: JSON.stringify({
+            Id : parseInt(document.getElementById("Id").value),
+            Nombre : document.getElementById("Nombre").value,
+            Edad : parseInt(document.getElementById("Edad").value),
+            
+        }),
+        headers:{
+            'Accept':"application/json",
+            "Content-Type":"application/json"
+        }
+    }).then(function(response){
+        if(response.ok){
+            return response.json();
+        }else{
+            alert("Error al ejecutar solicitud");
+        }
+    }).then(function(Data){
+        document.getElementById("Id").value = "";
+        document.getElementById("Nombre").value = "";
+        document.getElementById("Edad").value = "";
+        Get();
+    })
+}
+    
+function Delete(id){
+    fetch(url, {
+        method: "DELETE",
+        body: JSON.stringify({
+            Id : id,
+            
+        }),
+        headers:{
+            'Accept':"application/json",
+            "Content-Type":"application/json"
+        }
+    }).then(function(response){
+        if(response.ok){
+            return response.json();
+        }else{
+            alert("Error al ejecutar solicitud");
+        }
+    }).then(function(Data){
+        
+        Get();
+    })
+}
+
+function post(){
+    fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+            Nombre : document.getElementById("Nombre").value,
+            Edad :  parseInt(document.getElementById("Edad").value)
+        }),
+        headers:{
+            'Accept':"application/json",
+            "Content-Type":"application/json"
+        }
+    }).then(function(response){
+        if(response.ok){
+            return response.json();
+        }else{
+            alert("Error al ejecutar solicitud");
+        }
+    }).then(function(Data){
+        document.getElementById("Id").value = "";
+        document.getElementById("Nombre").value = "";
+        document.getElementById("Edad").value = "";
+        Get();
+    })
+}
+var tableIsCreate = false;
+function Get(){
+    fetch(url).then(function(response){
+        return response.json();
+    }).then(function(Data){
+                   
+        var body = document.getElementsByTagName("body")[0];
+        var tabla = document.createElement("table");
+        var tblBody = document.createElement("tbody");
+        var fila0 = document.createElement("tr");
+        var celda0 = document.createElement("td");
+        var celda1 = document.createElement("td");
+        var celda2 = document.createElement("td");
+        var textocelda0 = document.createTextNode("Nombre");
+        var textocelda1 = document.createTextNode("Edad");
+        var textocelda2 = document.createTextNode("Opción");
+        celda0.appendChild(textocelda0);
+        celda1.appendChild(textocelda1);
+        celda2.appendChild(textocelda2);
+        fila0.appendChild(celda0);
+        fila0.appendChild(celda1);
+        fila0.appendChild(celda2);
+        tblBody.appendChild(fila0);
+        tableIsCreate = true;
+              
+              
+        
+
+// Creamos las celdas
+    Data.forEach(element => {
+        var fila = document.createElement("tr");
+        var celdaNombre = document.createElement("td");
+        var celdaEdad = document.createElement("td");
+        var celdaOpcion = document.createElement("td");
+        var textoCeldaNombre = document.createTextNode(element.nombre);
+        var textoCeldaEdad = document.createTextNode(element.edad);
+        var button1 = document.createElement("button");
+        var button2 = document.createElement("button");
+        var textoButtonEliminar = document.createTextNode("Eliminar");
+        var textoButtonEditar = document.createTextNode("Editar");
+        button1.MiId = element.id;
+        button1.addEventListener("click",function(mibutton){
+            Delete(mibutton.target.MiId);
+        })
+        button2.MiId = element.id;
+        button2.MiNombre = element.nombre;
+        button2.MiEdad = element.edad;
+        button2.addEventListener("click",function(mibutton){
+            OpenEdit(
+                mibutton.target.MiId,
+                mibutton.target.MiNombre,
+                mibutton.target.MiEdad
+            );
+        })
+        button1.appendChild(textoButtonEliminar);
+        button2.appendChild(textoButtonEditar);
+        celdaOpcion.appendChild(button1);
+        celdaOpcion.appendChild(button2);
+        
+        celdaNombre.appendChild(textoCeldaNombre);
+        celdaEdad.appendChild(textoCeldaEdad);
+        fila.appendChild(celdaNombre);
+        fila.appendChild(celdaEdad);
+        fila.appendChild(celdaOpcion);
+        tblBody.appendChild(fila);
+    });
+        // agregamos la hilera al final de la tabla (al final del elemento tblbody)
+        tabla.style.color="blue";
+        tabla.style.margin = "auto";
+        tabla.style.marginTop="0.5in";
+
+        // posicionamos el <tbody> debajo del elemento <table>
+        tabla.appendChild(tblBody);
+        // appends <table> into <body>
+        body.appendChild(tabla);
+        // modifica el atributo "border" de la tabla y lo fija a "2";
+        tabla.setAttribute("border", 5);
+        //tabla.setAttribute("id", "tabla");
+        var result = document.getElementById("divlista").appendChild(tabla);
+
+    })
+}
+    
+</script>
